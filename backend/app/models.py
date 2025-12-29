@@ -11,9 +11,9 @@ class User(db.Model):
 
     phone = db.Column(db.String(15))
     address = db.Column(db.String(200))
-
     profile_pic = db.Column(db.String(255))
     document = db.Column(db.String(255))
+    age=db.Column(db.Integer,nullable=True)#new column added
 
     def to_dict(self):
         return {
@@ -24,5 +24,6 @@ class User(db.Model):
             "phone": self.phone,
             "address": self.address,
             "profile_pic": self.profile_pic,
-            "document": self.document
+            "document": self.document,
+            "age":self.age
         }
