@@ -2,30 +2,52 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./auth/Login";
 import RequireAuth from "./auth/RequireAuth";
+import UsersList from "./pages/UsersList.jsx";
+import UserDetails from "./pages/UserDetails";
+import RequireGuest from "./auth/RequireGuest";
 
-function UsersPlaceholder() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Users Page (Protected)</h1>
-    </div>
-  );
-}
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={
+             <RequireGuest>
+                <Login />
+             </RequireGuest>
+         }
+/>
 
         <Route
           path="/users"
           element={
             <RequireAuth>
-              <UsersPlaceholder />
+              <UsersList />
             </RequireAuth>
           }
         />
+        
 
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <UsersList />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/users/:id"
+          element={
+            <RequireAuth>
+              <UserDetails />
+            </RequireAuth>
+          }
+        />
+         
         <Route path="*" element={<Login />} />
       </Routes>
     </BrowserRouter>

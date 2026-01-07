@@ -1,12 +1,14 @@
 import { useState,useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios.js";
+import { replace, useNavigate } from "react-router-dom";
 
 export default  function Login(){
     const {login}=useContext(AuthContext);
     const [email,setEmail]=useState("");
     const [password,setPassword]=useState("");
     const [error,setError]=useState(null);
+    const navigate = useNavigate();
 
     const handleSubmit=async (e)=>{
         e.preventDefault();
@@ -15,12 +17,14 @@ export default  function Login(){
     try{
         const res=await api.post("/login",{email,password})
         login(res.data.access_token);
+        navigate("/users",{ replace: true });
+
     }catch(err){
         setError(err.response?.data?.message || "Login failed");    
     }
 };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-200">
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded shadow w-80"
