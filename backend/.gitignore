@@ -1,0 +1,16 @@
+# secrets
+.env
+
+# virtual environment
+venv/
+
+# python cache
+__pycache__/
+*.pyc
+
+# uploads (user data)
+uploads/
+
+# editor / OS noise
+.vscode/
+.DS_Store

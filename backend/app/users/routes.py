@@ -5,6 +5,13 @@ from werkzeug.utils import secure_filename
 
 from ..models import User
 from ..extensions import db
+from app.errors import (
+    BadRequestError,
+    ForbiddenError,
+    NotFoundError,
+    ConflictError
+)
+
 
 users_bp = Blueprint("users", __name__)
 
@@ -23,7 +30,7 @@ def get_users():
 def get_user(id):
     user = User.query.get(id)
     if not user:
-        return jsonify({"error": "User not found"}), 404
+        raise NotFoundError("User not found")
     return jsonify(user.to_dict()), 200
 
 
@@ -34,19 +41,19 @@ def replace_user(id):
     current = get_current_user()
 
     if not data:
-        return jsonify({"error": "Request body required"}), 400
+        raise BadRequestError("Request body required")
 
     user = User.query.get(id)
     if not user:
-        return jsonify({"error": "User not found"}), 404
+        raise NotFoundError("User not found")
 
     if current.role != "admin" and current.id != id:
-        return jsonify({"error": "Access denied"}), 403
+        raise ForbiddenError("Access denied")
 
     if "email" in data:
         existing = User.query.filter_by(email=data["email"]).first()
         if existing and existing.id != id:
-            return jsonify({"error": "Email already exists"}), 409
+            raise ConflictError("Email already exists")
 
     for field in ["name", "email", "phone", "address"]:
         if field in data:
@@ -56,6 +63,7 @@ def replace_user(id):
     return jsonify(user.to_dict()), 200
 
 
+
 @users_bp.route("/users/<int:id>", methods=["DELETE"])
 @jwt_required()
 def delete_user(id):
@@ -63,17 +71,19 @@ def delete_user(id):
     user = User.query.get(id)
 
     if not user:
-        return jsonify({"error": "User not found"}), 404
+        raise NotFoundError("User not found")
 
     if current.role == "admin" and current.id == id:
-        return jsonify({"error": "Admin cannot delete himself"}), 403
+        raise ForbiddenError("Admin cannot delete himself")
 
     if current.role != "admin" and current.id != id:
-        return jsonify({"error": "Access denied"}), 403
+        raise ForbiddenError("Access denied")
 
     db.session.delete(user)
     db.session.commit()
-    return jsonify({"message": "User deleted successfully"}), 200
+
+    return jsonify({"success": True, "message": "User deleted successfully"}), 200
+
 
 
 @users_bp.route("/users/<int:id>/upload", methods=["POST"])
@@ -83,10 +93,10 @@ def upload_files(id):
     current = get_current_user()
 
     if not user:
-        return jsonify({"error": "User not found"}), 404
+        raise NotFoundError("User not found")
 
     if current.id != id and current.role != "admin":
-        return jsonify({"error": "Access denied"}), 403
+        raise ForbiddenError("Access denied")
 
     profile = request.files.get("profile_pic")
     document = request.files.get("document")
@@ -104,4 +114,4 @@ def upload_files(id):
         user.document = filename
 
     db.session.commit()
-    return jsonify({"message": "Files uploaded successfully"}), 200
+    return jsonify({"success": True, "message": "Files uploaded successfully"}), 200

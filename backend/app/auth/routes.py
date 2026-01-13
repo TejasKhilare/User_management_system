@@ -4,6 +4,13 @@ from flask_jwt_extended import create_access_token
 
 from ..models import User
 from ..extensions import db
+from app.errors import (
+    BadRequestError,
+    ConflictError,
+    ForbiddenError,
+    UnauthorizedError
+)
+
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -13,20 +20,20 @@ def register():
 
     required = {"name", "email", "password", "role"}
     if not data or not required.issubset(data):
-        return jsonify({"error": "Request body required"}), 400
+        raise BadRequestError("Request body required")
 
     if data["role"] not in ["admin", "user"]:
-        return jsonify({"error": "Invalid role"}), 400
+        raise BadRequestError("Invalid role")
 
     if User.query.filter_by(email=data["email"]).first():
-        return jsonify({"error": "User already exists"}), 409
+        raise ConflictError("User already exists")
 
     admin_exists = User.query.filter_by(role="admin").first()
     if not admin_exists and data["role"] != "admin":
-        return jsonify({"error": "First registration must be admin"}), 403
+        raise ForbiddenError("First registration must be admin")
 
     if admin_exists and data["role"] == "admin":
-        return jsonify({"error": "Only one admin allowed"}), 403
+        raise ForbiddenError("Only one admin allowed")
 
     hashed_password = pbkdf2_sha256.hash(data["password"])
 
@@ -42,7 +49,7 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully"}), 201
+    return jsonify({"success": True, "message": "User registered successfully"}), 201
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -50,15 +57,16 @@ def login():
     data = request.json
 
     if not data or not {"email", "password"}.issubset(data):
-        return jsonify({"error": "Email and password required"}), 400
+        raise BadRequestError("Email and password required")
 
     user = User.query.filter_by(email=data["email"]).first()
     if not user or not pbkdf2_sha256.verify(data["password"], user.password):
-        return jsonify({"error": "Invalid credentials"}), 401
+        raise UnauthorizedError("Invalid credentials")
 
     token = create_access_token(identity=str(user.id))
 
     return jsonify({
+        "success": True,
         "message": "Login successful",
         "access_token": token
     }), 200
