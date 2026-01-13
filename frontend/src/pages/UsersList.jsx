@@ -64,7 +64,7 @@ export default function UsersList() {
         navigate("/login",{ replace: true });});
   }, [navigate]);
 
-  /* Column definitions (NO hide logic here) */
+  /* Column definition */
   const columnDefs = useMemo(
     () => [
       {
@@ -130,7 +130,7 @@ export default function UsersList() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-purple-50 p-4 md:p-6">
+    <div className="min-h-screen bg-linear-to-br from-blue-100 to-purple-100 p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
   <h1 className="text-center flex-1 text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-purple-600">
     Users List

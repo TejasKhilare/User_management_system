@@ -1,15 +1,21 @@
-import axios from 'axios';
+import axios from "axios";
 
- const api=axios.create({
-    baseURL: "http://127.0.0.1:5000",
- });
- api.interceptors.request.use((config)=>{
-    const token=localStorage.getItem("token");
-    if(token){
-        config.headers.Authorization=`Bearer ${token}`;
+const api = axios.create({
+  baseURL: "http://127.0.0.1:5000",
+});
 
-    }
-    return config;
- });
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
- export default api;
+  // ✅ IMPORTANT: allow browser to set multipart boundary
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
+
+  return config;
+});
+
+export default api;
