@@ -1,4 +1,7 @@
 from flask import jsonify
+import logging
+logger = logging.getLogger(__name__)
+
 class APIError(Exception):
     status_code=400
     message="Bad request"
@@ -49,6 +52,7 @@ class InternalServerError(APIError):
 def register_error_handlers(app):
     @app.errorhandler(APIError)
     def handle_api_error(error):
+        logger.warning(error.message)
         return error.to_response()
 
     @app.errorhandler(404)
@@ -60,6 +64,7 @@ def register_error_handlers(app):
 
     @app.errorhandler(500)
     def handle_500_error(error):
+        logger.exception("Unhandled exception")
         return jsonify({
             "success": False,
             "error": "Internal server error"

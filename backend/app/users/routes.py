@@ -11,6 +11,8 @@ from app.errors import (
     NotFoundError,
     ConflictError
 )
+from app.schemas.users import UpdateUserSchema
+from app.schemas.utils import validate_schema
 
 
 users_bp = Blueprint("users", __name__)
@@ -37,7 +39,8 @@ def get_user(id):
 @users_bp.route("/users/<int:id>", methods=["PUT"])
 @jwt_required()
 def replace_user(id):
-    data = request.json
+    data = validate_schema(UpdateUserSchema(), request.json)
+
     current = get_current_user()
 
     if not data:
@@ -55,7 +58,7 @@ def replace_user(id):
         if existing and existing.id != id:
             raise ConflictError("Email already exists")
 
-    for field in ["name", "email", "phone", "address"]:
+    for field in ["name", "email", "phone", "address","age"]:
         if field in data:
             setattr(user, field, data[field])
 

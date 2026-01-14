@@ -10,13 +10,16 @@ from app.errors import (
     ForbiddenError,
     UnauthorizedError
 )
+from app.schemas.auth import RegisterSchema, LoginSchema
+from app.schemas.utils import validate_schema
+
 
 
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    data = request.json
+    data = validate_schema(RegisterSchema(),request.json)
 
     required = {"name", "email", "password", "role"}
     if not data or not required.issubset(data):
@@ -54,7 +57,7 @@ def register():
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.json
+    data = validate_schema(LoginSchema(),request.json)
 
     if not data or not {"email", "password"}.issubset(data):
         raise BadRequestError("Email and password required")

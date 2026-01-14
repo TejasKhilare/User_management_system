@@ -17,3 +17,6 @@ migrations/
 
 #Environment variables....
 .env
+
+logs/
+*.log
