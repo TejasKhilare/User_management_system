@@ -3,10 +3,10 @@ class APIError(Exception):
     status_code=400
     message="Bad request"
 
-    def __init__(self,messsage=None,status_code=None):
+    def __init__(self,message=None,status_code=None):
         super().__init__()
-        if messsage:
-            self.message=messsage
+        if message is not None:
+            self.message=message
         if status_code:
             self.status_code=status_code
         
