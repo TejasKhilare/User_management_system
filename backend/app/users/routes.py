@@ -23,8 +23,48 @@ def get_current_user():
 @users_bp.route("/users", methods=["GET"])
 @jwt_required()
 def get_users():
-    users = User.query.all()
-    return jsonify([u.to_dict() for u in users]), 200
+    current_id = int(get_jwt_identity())
+
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 10))
+    search = request.args.get("search", "").strip()
+
+    query = User.query
+
+    if search:
+        like = f"%{search}%"
+        query = query.filter(
+            db.or_(
+                User.name.ilike(like),
+                User.email.ilike(like),
+                User.phone.ilike(like),
+                User.address.ilike(like),
+            )
+        )
+
+    query = query.order_by(
+        db.case(
+            (User.id == current_id, 0),
+            (User.role == "admin", 1),
+            else_=2
+        ),
+        User.id
+    )
+
+    total = query.count()
+
+    users = (
+        query
+        .limit(limit)
+        .offset((page - 1) * limit)
+        .all()
+    )
+
+    return jsonify({
+        "data": [u.to_dict() for u in users],
+        "total": total
+    }), 200
+
 
 
 @users_bp.route("/users/<int:id>", methods=["GET"])
