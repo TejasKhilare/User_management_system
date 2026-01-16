@@ -104,7 +104,7 @@ const canDelete =isSelf || isAdmin;
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-purple-50 p-4 md:p-6">
+    <div className="min-h-screen bg-linear-to-br from-blue-200 to-purple-200 p-4 md:p-6">
       {/* Header */}
       <div className="flex items-center mb-6">
         <button
